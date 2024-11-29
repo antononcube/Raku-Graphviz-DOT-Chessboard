@@ -5,6 +5,8 @@ use Graph::Grid;
 use Graph::Path;
 
 #==========================================================
+# DOT SVG
+#==========================================================
 # This code is the same as the method Graph!dot-svg.
 # But I do not want to Graph to the non-private method dot-svg.
 # Also, having this sub in the package makes the combinations of
@@ -17,25 +19,73 @@ sub dot-svg($input, Str:D :$engine = 'dot', Str:D :$format = 'svg') {
     return $svg-output;
 }
 
+
+#==========================================================
+# Predicates
+#==========================================================
+
+sub is-positional-of-lists($obj, UInt $l) is export {
+    ($obj ~~ Array:D | List:D | Seq:D) && $obj.elems && ( [and] $obj.map({ ($_ ~~ Array:D | List:D | Seq:D) && $_.elems == $l }) )
+}
+
+#==========================================================
+# Process chess position specs
+#==========================================================
+my %chess-pieces =
+        :p('♟'), :P('♙'), :r('♜'), :R('♖'),
+        :n('♞'), :N('♘'), :b('♝'), :B('♗'),
+        :q('♛'), :Q('♕'), :k('♚'), :K('♔');
+
+my %white-to-black = :P('p'), :R('r'), :N('n'), :B('b'), :Q('q'), :K('k');
+%white-to-black = %white-to-black , ('♙♖♘♗♕♔'.comb Z=> '♟♜♞♝♛♚'.comb).Hash;
+
+proto sub dot-chess-position($spec, *%args) is export {*}
+
+multi sub dot-chess-position($data where is-positional-of-lists($data, 3), *%args) {
+    my @data2 = $data.map({ %( <x y z>.Array Z=> $_.Array) });
+    return dot-chess-position(@data2, |%args);
+}
+
+multi sub dot-chess-position(@data is copy where @data.all ~~ Map, UInt:D :$font-size=20) {
+    return '' unless @data;
+
+    my $k = 0;
+    return @data.map({
+        my $color =  '♟♜♞♝♛♚pnqrbk'.index($_<z>) ?? 'Black' !! 'White';
+        my $label = %chess-pieces{$_<z>};
+        $label = %white-to-black{$label} // $label;
+        my $x = do given $_<x> {
+            when Int:D { $_ - 1 }
+            when Str:D { $_.lc.ord - 'a'.ord }
+        }
+        my $y = $_<y> ~~ Int:D ?? $_<y> - 1 !! $_<y>;
+        "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=$label]"
+    }).join("\n");
+}
+
+#==========================================================
+# Main chessboard plot
 #==========================================================
 #| Chessboard generation via Graphviz DOT language spec.
 proto sub dot-chessboard(|) is export {*}
 
-multi sub dot-chessboard(*%args) {
-    return dot-chessboard(rows => 8, columns => 8, |%args);
-}
+multi sub dot-chessboard(UInt:D $rows, $columns is copy = Whatever, *%args) {
+    if $columns.isa(Whatever) { $columns = $rows }
+    die 'The value of the second argument is expected to be a positive integer or Whatever.'
+    unless $columns ~~ Int:D && $columns > 0;
 
-multi sub dot-chessboard(UInt:D $rows, UInt:D $columns, *%args) {
-    return dot-chessboard(:$rows, :$columns, |%args);
+    return dot-chessboard([], :$rows, :$columns, |%args);
 }
 
 multi sub dot-chessboard(
-        UInt:D :r(:$rows),
-        UInt:D :c(:$columns),
+        @data,
+        UInt:D :r(:$rows) = 8,
+        UInt:D :c(:$columns) = 8,
         Str:D :$background = '#1F1F1F',
         Str:D :$font-color = 'Ivory',
-        Str:D :white(:$white-squares-color) = 'LightGray',
-        Str:D :black(:$black-squares-color) = 'DimGray',
+        UInt:D :$font-size = 60,
+        Str:D :white(:$white-square-color) = 'LightGray',
+        Str:D :black(:$black-square-color) = 'DimGray',
         UInt:D :$tick-font-size = 14,
         Numeric:D :$tick-offset = 0.7,
         Str:D :title(:$plot-label) = '',
@@ -57,8 +107,8 @@ multi sub dot-chessboard(
     # Make sure the left bottom square is black
     my %colors = $g.bipartite-coloring;
     my %replace;
-    %replace{%colors<0_0>} = $black-squares-color;
-    %replace{%colors<0_1>} = $white-squares-color;
+    %replace{%colors<0_0>} = $black-square-color;
+    %replace{%colors<0_1>} = $white-square-color;
 
     my %highlight = %colors.map({ $_.key => %replace{$_.value} }).classify(*.value).nodemap(*».key);
 
@@ -98,8 +148,16 @@ multi sub dot-chessboard(
     $ticks-dot = $ticks-preamble ~ "\n" ~ $ticks-dot;
 
     #------------------------------------------------------
+    my $pieces-preamble = Q:s:to/END/;
+    node [color=none, fillcolor=none, fontcolor=$font-color, labelloc=c, fontsize=$font-size];
+    edge [style=invis];
+    END
+
+    my $pieces = dot-chess-position(@data, :$font-size);
+
+    #------------------------------------------------------
     # Combine DOT fragments
-    my $combined-dot = "graph \{\n$board-dot\n\n$ticks-dot\n\}";
+    my $combined-dot = "graph \{\n$board-dot\n\n$ticks-dot\n$pieces\n\}";
 
     #------------------------------------------------------
     # DOT spec if $svg is False, otherwise rendering of the DOT spec to SVG.

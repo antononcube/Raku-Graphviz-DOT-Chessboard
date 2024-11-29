@@ -6,6 +6,6 @@ use Test;
 plan *;
 
 ## 1
-dot-chessboard(8, 8, black-squares-color => 'SaddleBrown', white-squares-color => 'Orange', size => (4,4)):svg;
+dot-chessboard(8, black-square-color => 'SandyBrown', white-square-color => 'Moccasin', size => (4,4)):svg;
 
 done-testing;
