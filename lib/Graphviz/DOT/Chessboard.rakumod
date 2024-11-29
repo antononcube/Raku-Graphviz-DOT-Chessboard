@@ -56,9 +56,10 @@ multi sub dot-chess-position(@data is copy where @data.all ~~ Map, UInt:D :$font
         $label = %white-to-black{$label} // $label;
         my $x = do given $_<x> {
             when Int:D { $_ - 1 }
-            when Str:D { $_.lc.ord - 'a'.ord }
+            when $_ ~~ / \d+ / { $_.Int - 1 }
+            when $_ ~~ / \w / { $_.lc.ord - 'a'.ord }
         }
-        my $y = $_<y> ~~ Int:D ?? $_<y> - 1 !! $_<y>;
+        my $y = $_<y> ~~ Int:D ?? $_<y> - 1 !! $_<y>.Int - 1;
         "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=$label]"
     }).join("\n");
 }
@@ -78,16 +79,17 @@ multi sub dot-chessboard(UInt:D $rows, $columns is copy = Whatever, *%args) {
 }
 
 multi sub dot-chessboard(
-        @data,
+        @data = [],
         UInt:D :r(:$rows) = 8,
         UInt:D :c(:$columns) = 8,
         Str:D :$background = '#1F1F1F',
         Str:D :$font-color = 'Ivory',
-        UInt:D :$font-size = 60,
+        UInt:D :$font-size = 70,
         Str:D :white(:$white-square-color) = 'LightGray',
         Str:D :black(:$black-square-color) = 'DimGray',
-        UInt:D :$tick-font-size = 14,
+        UInt:D :$tick-font-size = 20,
         Numeric:D :$tick-offset = 0.7,
+        Numeric:D :$opacity = 0.4,
         Str:D :title(:$plot-label) = '',
         :size(:$graph-size) is copy = Whatever,
         Bool:D :$svg = False) {
@@ -116,13 +118,13 @@ multi sub dot-chessboard(
     # DOT language spec
     my $preamble = Q:s:to/END/;
     fontcolor = "$font-color";
-    fontsize = "16";
+    fontsize = "24";
     labelloc = "t";
     label = "$plot-label";
     graph [size="$graph-size"];
 
     bgcolor="$background";
-    node [style=filled, opacity=0.3, fixedsize=true, shape=square, color="Black", fillcolor="SlateBlue", penwidth=1, fontsize=4, fontcolor="White", labelloc=c, width=0.98, height=0.98];
+    node [style=filled, opacity=$opacity, fixedsize=true, shape=square, color="Black", fillcolor="SlateBlue", penwidth=1, fontsize=4, fontcolor="White", labelloc=c, width=0.98, height=0.98];
     edge [style=invis, color="SteelBlue", penwidth=0.6];
     END
 
