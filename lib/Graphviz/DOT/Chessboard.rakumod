@@ -49,7 +49,7 @@ multi sub dot-chessboard(
     graph [size="$graph-size"];
 
     bgcolor="$background";
-    node [style=filled, label="", opacity=0.3, fixedsize=true, shape=square, color="Black", fillcolor="SlateBlue", penwidth=1, fontsize=4, fontcolor="White", labelloc=c, width=0.98, height=0.98];
+    node [style=filled, opacity=0.3, fixedsize=true, shape=square, color="Black", fillcolor="SlateBlue", penwidth=1, fontsize=4, fontcolor="White", labelloc=c, width=0.98, height=0.98];
     edge [style=invis, color="SteelBlue", penwidth=0.6];
     END
 
