@@ -40,7 +40,7 @@ say dot-chessboard(4, 4, title => 'Example small chessboard'):!svg;
 Generate an SVG plot:
 
 ```raku
-dot-chessboard(8, 8, black-squares-color => 'SaddleBrown', white-squares-color => 'Orange', size => (4,4)):svg;
+dot-chessboard(8, 8, black-square-color => 'SaddleBrown', white-square-color => 'Orange', size => (4,4)):svg;
 ```
 
 ------
