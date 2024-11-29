@@ -12,6 +12,7 @@ multi sub dot-chessboard(*%args) {
 
 multi sub dot-chessboard(
         UInt:D $rows, UInt:D $cols,
+        Str:D :$background = '#1F1F1F',
         Str:D :white(:$white-squares-color) = 'LightGray',
         Str:D :black(:$black-squares-color) = 'DimGray',
         Str:D :title(:$plot-label) = '',
@@ -47,8 +48,8 @@ multi sub dot-chessboard(
     label = "$plot-label";
     graph [size="$graph-size"];
 
-    bgcolor="#1F1F1F";
-    node [style=filled, label="", opacity=0.3, fixedsize=true, shape=square, color="Black", fillcolor="SlateBlue", penwidth=1, fontsize=4, fontcolor="White", labelloc=c, width=0.98, height=0.3];
+    bgcolor="$background";
+    node [style=filled, label="", opacity=0.3, fixedsize=true, shape=square, color="Black", fillcolor="SlateBlue", penwidth=1, fontsize=4, fontcolor="White", labelloc=c, width=0.98, height=0.98];
     edge [style=invis, color="SteelBlue", penwidth=0.6];
     END
 
