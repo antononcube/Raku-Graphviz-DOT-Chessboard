@@ -150,11 +150,6 @@ multi sub dot-chessboard(
     $ticks-dot = $ticks-preamble ~ "\n" ~ $ticks-dot;
 
     #------------------------------------------------------
-    my $pieces-preamble = Q:s:to/END/;
-    node [color=none, fillcolor=none, fontcolor=$font-color, labelloc=c, fontsize=$font-size];
-    edge [style=invis];
-    END
-
     my $pieces = dot-chess-position(@data, :$font-size);
 
     #------------------------------------------------------
