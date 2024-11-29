@@ -1,0 +1,11 @@
+use v6.d;
+
+use lib <. lib>;
+use Graphviz::DOT::Chessboard;
+use Test;
+plan *;
+
+## 1
+dot-chessboard(8, 8, black-squares-color => 'SaddleBrown', white-squares-color => 'Orange', size => (4,4)):svg;
+
+done-testing;

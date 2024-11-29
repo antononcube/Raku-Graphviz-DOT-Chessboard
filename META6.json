@@ -1,0 +1,25 @@
+{
+    "name": "Graphviz::DOT::Chessboard",
+    "description": "Chessboard plot using the Graphviz DOT language.",
+    "version": "0.0.1",
+    "authors": [
+        "Anton Antonov"
+    ],
+    "auth": "zef:antononcube",
+    "depends": [
+        "Graph:ver<0.0.22+>"
+    ],
+    "build-depends": [],
+    "provides": {
+        "Graphviz::DOT::Chessboard": "lib/Graphviz/DOT/Chessboard.rakumod"
+    },
+    "license": "Artistic-2.0",
+    "tags": [
+        "dot",
+        "graphviz",
+        "chess",
+        "chessboard"
+    ],
+    "api": "0",
+    "source-url": "https://github.com/antononcube/Raku-Graphviz-DOT-Chessboard.git"
+}
