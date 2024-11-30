@@ -38,6 +38,7 @@ my %chess-pieces =
 
 my %white-to-black = :P('p'), :R('r'), :N('n'), :B('b'), :Q('q'), :K('k');
 %white-to-black = %white-to-black , ('♙♖♘♗♕♔'.comb Z=> '♟♜♞♝♛♚'.comb).Hash;
+my %black-to-white = %white-to-black.invert;
 
 proto sub dot-chess-position($spec, *%args) is export {*}
 
@@ -53,14 +54,18 @@ multi sub dot-chess-position(@data is copy where @data.all ~~ Map, UInt:D :$font
     return @data.map({
         my $color =  '♟♜♞♝♛♚pnqrbk'.index($_<z>) ?? 'Black' !! 'White';
         my $label = %chess-pieces{$_<z>};
-        $label = %white-to-black{$label} // $label;
+        my $label2 = %white-to-black{$label} // $label;
         my $x = do given $_<x> {
             when Int:D { $_ - 1 }
             when $_ ~~ / \d+ / { $_.Int - 1 }
             when $_ ~~ / \w / { $_.lc.ord - 'a'.ord }
         }
         my $y = $_<y> ~~ Int:D ?? $_<y> - 1 !! $_<y>.Int - 1;
-        "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=$label]"
+        my $res = "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=$label2]";
+        if $label ne $label2 {
+            $res ~= "\n\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=Gray, label=$label]";
+        }
+        $res
     }).join("\n");
 }
 
