@@ -43,12 +43,20 @@ Generate an SVG plot:
 dot-chessboard(8, 8, black-square-color => 'SaddleBrown', white-square-color => 'Orange', size => (4,4)):svg;
 ```
 
+Using a FEN string (on a smaller board):
+
+```raku
+my $fen = '8/8/8/3K4/5r2/8/1k6/8';
+
+dot-chessboard($fen, :5r, :6c, :4size):svg
+```
+
 ------
 
 ## TODO
 
 - [X] DONE White pieces should have contours
-- [ ] TODO Chess positions by Forsyth-Edwards Notation (FEN) strings 
+- [X] DONE Chess positions by Forsyth-Edwards Notation (FEN) strings 
 - [ ] TODO Fuller set of unit tests
 
 ------

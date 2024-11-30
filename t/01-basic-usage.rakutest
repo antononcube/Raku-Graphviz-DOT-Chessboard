@@ -8,4 +8,13 @@ plan *;
 ## 1
 dot-chessboard(8, black-square-color => 'SandyBrown', white-square-color => 'Moccasin', size => (4,4)):svg;
 
+## 2
+dot-chessboard(8, 4, size => 4);
+
+## 3
+dot-chessboard(<a1N b3q>».comb».List);
+
+## 4
+dot-chessboard('8/8/8/3K4/5r2/8/1k6/8');
+
 done-testing;

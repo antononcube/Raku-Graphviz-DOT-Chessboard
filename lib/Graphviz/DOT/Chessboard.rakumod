@@ -3,6 +3,8 @@ unit module Graphviz::DOT::Chessboard;
 use Graph;
 use Graph::Grid;
 use Graph::Path;
+use FEN::Grammar;
+use FEN::Actions;
 
 #==========================================================
 # DOT SVG
@@ -83,6 +85,21 @@ multi sub dot-chessboard(UInt:D $rows, $columns is copy = Whatever, *%args) {
     return dot-chessboard([], :$rows, :$columns, |%args);
 }
 
+multi sub dot-chessboard(Str:D $data, *%args) {
+
+    # Interpret into rows
+    my @fenData;
+    my $match = FEN::Grammar.parse($data, actions => FEN::Actions.new);
+    my $resObj = $match.made;
+
+    my @ranks = |$resObj.position-set().grep({ so $_.value }).map({ [|$_.key.split(/\h/), $_.value] })>>.Array.Array;
+
+    @fenData.append( @ranks.map({ (<x y z> Z=> $_.Array).Hash.deepmap(*.Str) }) );
+
+    # Delegate
+    return dot-chessboard(@fenData, |%args);
+}
+
 multi sub dot-chessboard(
         @data = [],
         UInt:D :r(:$rows) = 8,
@@ -102,8 +119,9 @@ multi sub dot-chessboard(
     #------------------------------------------------------
     # Process graph size
     if $graph-size.isa(Whatever) { $graph-size = ($rows, $columns) }
+    if $graph-size ~~ Numeric:D { $graph-size = ($graph-size xx 2).Array }
     if $graph-size ~~ Positional:D && $graph-size.elems == 2 { $graph-size = $graph-size.join(',') ~ '!'}
-    die 'The value of $graph-size is expected to be a list of two integers, a string size spec, or Whatever.'
+    die 'The value of $graph-size is expected to be a number, a list of two numbers, a string size spec, or Whatever.'
     unless $graph-size ~~ Str:D;
 
     #------------------------------------------------------
