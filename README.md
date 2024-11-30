@@ -47,8 +47,8 @@ dot-chessboard(8, 8, black-square-color => 'SaddleBrown', white-square-color => 
 
 ## TODO
 
+- [X] DONE White pieces should have contours
 - [ ] TODO Chess positions by Forsyth-Edwards Notation (FEN) strings 
-- [ ] TODO White pieces should have contours
 - [ ] TODO Fuller set of unit tests
 
 ------
