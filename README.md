@@ -63,6 +63,7 @@ dot-chessboard($fen, :5r, :6c):svg
 - [X] DONE White pieces should have contours
 - [X] DONE Chess positions by Forsyth-Edwards Notation (FEN) strings 
 - [ ] TODO Fuller set of unit tests
+- [ ] TODO CLI script
 
 ------
 
