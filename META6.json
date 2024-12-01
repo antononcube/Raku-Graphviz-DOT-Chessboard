@@ -1,13 +1,13 @@
 {
     "name": "Graphviz::DOT::Chessboard",
     "description": "Chessboard plot using the Graphviz DOT language.",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "authors": [
         "Anton Antonov"
     ],
     "auth": "zef:antononcube",
     "depends": [
-        "Graph:ver<0.0.23+>",
+        "Graph:ver<0.0.24+>",
         "FEN::Grammar:ver<0.0.6+>"
     ],
     "build-depends": [],
