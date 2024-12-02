@@ -63,9 +63,9 @@ multi sub dot-chess-position(@data is copy where @data.all ~~ Map, UInt:D :$font
             when $_ ~~ / \w / { $_.lc.ord - 'a'.ord }
         }
         my $y = $_<y> ~~ Int:D ?? $_<y> - 1 !! $_<y>.Int - 1;
-        my $res = "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=$label2]";
+        my $res = "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=\"$label2\"]";
         if $label ne $label2 {
-            $res ~= "\n\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=Gray, label=$label]";
+            $res ~= "\n\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=Gray, label=\"$label\"]";
         }
         $res
     }).join("\n");
@@ -156,14 +156,17 @@ multi sub dot-chessboard(
 
     #------------------------------------------------------
     # Ticks
-    my @row-ticks = ('a'..'z').head($columns);
-    my $gr = Graph::Path(@row-ticks);
-    $gr.vertex-coordinates = (@row-ticks Z=> (^$columns X -$tick-offset)).Hash;
-    my $gc = Graph::Path(1..$rows);
-    $gc.vertex-coordinates = (1..$rows Z=> (-$tick-offset X ^$rows)).Hash;
+    my @row-tick-labels = ('a'..'z').head($columns);
+    my %row-ticks = ('cb-tick-' X~ @row-tick-labels) Z=> @row-tick-labels;
+    my $gr = Graph::Path(%row-ticks.keys);
+    $gr.vertex-coordinates = (%row-ticks.keys Z=> (^$columns X -$tick-offset)).Hash;
+    my @column-tick-labels = (1..$rows);
+    my %column-ticks = ('cb-tick-' X~ @column-tick-labels) Z=> @column-tick-labels;
+    my $gc = Graph::Path(%column-ticks.keys);
+    $gc.vertex-coordinates = (%column-ticks.keys Z=> (-$tick-offset X ^$rows)).Hash;
     my $gt = $gr.union($gc);
 
-    my $ticks-dot = $gt.dot.subst(/ ^ graph .*? '{' | \s* '}' \s*/, :g);
+    my $ticks-dot = $gt.dot(node-labels => [|%row-ticks, |%column-ticks].Hash).lines.grep({ $_ ~~ / ^ '"cb-tick-'/}).join("\n");
 
     my $ticks-preamble = Q:s:to/END/;
     node [color=none, fillcolor=none, fontcolor=$font-color, labelloc=c, fontsize=$tick-font-size];
@@ -177,7 +180,7 @@ multi sub dot-chessboard(
 
     #------------------------------------------------------
     # Combine DOT fragments
-    my $combined-dot = "graph \{\n$board-dot\n\n$ticks-dot\n$pieces\n\}";
+    my $combined-dot = "graph \{\n$board-dot\n\n$ticks-dot\n\n$pieces\n\}";
 
     #------------------------------------------------------
     # DOT spec if $svg is False, otherwise rendering of the DOT spec to SVG.
