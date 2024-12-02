@@ -127,13 +127,13 @@ multi sub dot-chessboard(
     #------------------------------------------------------
     # Leveraging that grid graphs are bipartite
     # Bipartite graph
-    my $g = Graph::Grid.new($rows, $columns);
+    my $g = Graph::Grid.new($rows, $columns, prefix => 'cb-square-');
 
     # Make sure the left bottom square is black
     my %colors = $g.bipartite-coloring;
     my %replace;
-    %replace{%colors<0_0>} = $black-square-color;
-    %replace{%colors<0_1>} = $white-square-color;
+    %replace{%colors<cb-square-0_0>} = $black-square-color;
+    %replace{%colors<cb-square-0_1>} = $white-square-color;
 
     my %highlight = %colors.map({ $_.key => %replace{$_.value} }).classify(*.value).nodemap(*».key);
 
