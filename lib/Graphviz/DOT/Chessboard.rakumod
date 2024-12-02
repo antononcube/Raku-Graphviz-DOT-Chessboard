@@ -158,11 +158,11 @@ multi sub dot-chessboard(
     # Ticks
     my @row-tick-labels = ('a'..'z').head($columns);
     my %row-ticks = ('cb-tick-' X~ @row-tick-labels) Z=> @row-tick-labels;
-    my $gr = Graph::Path(%row-ticks.keys);
+    my $gr = Graph::Path(%row-ticks.keys.sort);
     $gr.vertex-coordinates = (%row-ticks.keys Z=> (^$columns X -$tick-offset)).Hash;
     my @column-tick-labels = (1..$rows);
     my %column-ticks = ('cb-tick-' X~ @column-tick-labels) Z=> @column-tick-labels;
-    my $gc = Graph::Path(%column-ticks.keys);
+    my $gc = Graph::Path(%column-ticks.keys.sort);
     $gc.vertex-coordinates = (%column-ticks.keys Z=> (-$tick-offset X ^$rows)).Hash;
     my $gt = $gr.union($gc);
 
