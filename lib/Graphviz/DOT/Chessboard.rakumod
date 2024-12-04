@@ -49,7 +49,9 @@ multi sub dot-chess-position($data where is-positional-of-lists($data, 3), *%arg
     return dot-chess-position(@data2, |%args);
 }
 
-multi sub dot-chess-position(@data is copy where @data.all ~~ Map, UInt:D :$font-size=20) {
+multi sub dot-chess-position(@data is copy where @data.all ~~ Map,
+                             UInt:D :$font-size=20,
+                             Str:D :$white-piece-stroke-color='DarkGray') {
     return '' unless @data;
 
     my $k = 0;
@@ -65,7 +67,7 @@ multi sub dot-chess-position(@data is copy where @data.all ~~ Map, UInt:D :$font
         my $y = $_<y> ~~ Int:D ?? $_<y> - 1 !! $_<y>.Int - 1;
         my $res = "\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$color, label=\"$label2\"]";
         if $label ne $label2 {
-            $res ~= "\n\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=Gray, label=\"$label\"]";
+            $res ~= "\n\"p{$k++}\" [pos=\"$x,$y!\", fontsize=$font-size, fontcolor=$white-piece-stroke-color, label=\"$label\"]";
         }
         $res
     }).join("\n");
@@ -109,6 +111,7 @@ multi sub dot-chessboard(
         UInt:D :$font-size = 70,
         Str:D :white(:$white-square-color) = 'LightGray',
         Str:D :black(:$black-square-color) = 'DimGray',
+        Str:D :white-stroke-color(:$white-piece-stroke-color) = 'DarkGray',
         UInt:D :$tick-font-size = 20,
         Numeric:D :$tick-offset = 0.7,
         Numeric:D :$opacity = 0.4,
@@ -176,7 +179,7 @@ multi sub dot-chessboard(
     $ticks-dot = $ticks-preamble ~ "\n" ~ $ticks-dot;
 
     #------------------------------------------------------
-    my $pieces = dot-chess-position(@data, :$font-size);
+    my $pieces = dot-chess-position(@data, :$font-size, :$white-piece-stroke-color);
 
     #------------------------------------------------------
     # Combine DOT fragments
