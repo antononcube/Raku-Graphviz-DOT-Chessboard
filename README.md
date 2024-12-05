@@ -56,6 +56,17 @@ dot-chessboard($fen, :5r, :6c):svg
 
 ![](./docs/small-chessboard.svg)
 
+Here is a way to specify the initial position of a 5x5 chess (in a "green style"):
+
+```raku
+my %opts-green = black-square-color => '#779556ff', white-square-color => '#ebecd0ff',  white-piece-stroke-color=> 'LightGray';
+my $fen = '8/8/8/rnbqk3/ppppp3/8/PPPPP3/RNBQK3';
+
+dot-chessboard($fen, :5r, :5c, :4size, |%opts-green, background=>'none', :svg)
+```
+
+![](./docs/initial-position-5x5.svg)
+
 ------
 
 ## TODO
