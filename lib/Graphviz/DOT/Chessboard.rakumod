@@ -117,6 +117,9 @@ multi sub dot-chessboard(
         Numeric:D :$opacity = 0.4,
         Str:D :title(:$plot-label) = '',
         :size(:$graph-size) is copy = Whatever,
+        :$highlight is copy = Whatever,
+        :y-labels(:$row-names) = Whatever,
+        :x-labels(:$column-names) = Whatever,
         Bool:D :$svg = False) {
 
     #------------------------------------------------------
@@ -133,12 +136,13 @@ multi sub dot-chessboard(
     my $g = Graph::Grid.new($rows, $columns, prefix => 'cb-square-');
 
     # Make sure the left bottom square is black
-    my %colors = $g.bipartite-coloring;
-    my %replace;
-    %replace{%colors<cb-square-0_0>} = $black-square-color;
-    %replace{%colors<cb-square-0_1>} = $white-square-color;
-
-    my %highlight = %colors.map({ $_.key => %replace{$_.value} }).classify(*.value).nodemap(*».key);
+    if $highlight.isa(Whatever) {
+        my %colors = $g.bipartite-coloring;
+        my %replace;
+        %replace{%colors<cb-square-0_0>} = $black-square-color;
+        %replace{%colors<cb-square-0_1>} = $white-square-color;
+        $highlight = %colors.map({ $_.key => %replace{$_.value} }).classify(*.value).nodemap(*».key);
+    }
 
     #------------------------------------------------------
     # DOT language spec
@@ -154,17 +158,26 @@ multi sub dot-chessboard(
     edge [style=invis, color="SteelBlue", penwidth=0.6];
     END
 
-    my $board-dot = $g.dot(:$preamble, :%highlight, :!node-labels);
+    my $board-dot = $g.dot(:$preamble, :$highlight, :!node-labels);
     $board-dot .= subst(/ ^ graph .*? '{' | \s* '}' \s*/, :g);
 
     #------------------------------------------------------
     # Ticks
     my @row-tick-labels = ('a'..'z').head($columns);
+    if $column-names ~~ (Array:D | List:D | Seq:D) && $column-names.elems ≥ $columns {
+        @row-tick-labels = $column-names.head($columns)
+    }
     my %row-ticks = ('cb-tick-' X~ @row-tick-labels) Z=> @row-tick-labels;
+
     my $gr = Graph::Path(%row-ticks.keys.sort);
     $gr.vertex-coordinates = (%row-ticks.keys.sort Z=> (^$columns X -$tick-offset)).Hash;
+
     my @column-tick-labels = (1..$rows);
+    if $row-names ~~ (Array:D | List:D | Seq:D) && $row-names.elems ≥ $rows {
+        @column-tick-labels = $row-names.head($rows)
+    }
     my %column-ticks = ('cb-tick-' X~ @column-tick-labels) Z=> @column-tick-labels;
+
     my $gc = Graph::Path(%column-ticks.keys.sort);
     $gc.vertex-coordinates = (%column-ticks.keys.sort Z=> (-$tick-offset X ^$rows)).Hash;
     my $gt = $gr.union($gc);
@@ -188,4 +201,26 @@ multi sub dot-chessboard(
     #------------------------------------------------------
     # DOT spec if $svg is False, otherwise rendering of the DOT spec to SVG.
     return $svg ?? dot-svg($combined-dot, engine => 'neato', format => 'svg') !! $combined-dot;
+}
+
+#==========================================================
+# Matrix plot (2D)
+#==========================================================
+#| Matrix plot generation via Graphviz DOT language spec.
+proto sub dot-matrix-plot(|) is export {*}
+
+multi sub dot-matrix-plot(@mat, *%args) {
+
+    die 'The first argument is expected to be a full 2D array.'
+    unless @mat ~~ (Array:D | List:D | Seq:D) && @mat.all ~~ (Array:D | List:D | Seq:D) && @mat>>.elems.all eq @mat.head.elems;
+
+    my %rules;
+    for ^@mat.elems -> $i {
+        for ^@mat.head.elems -> $j {
+            %rules{"cb-square-{$i}_{$j}"} = @mat[$i][$j]
+        }
+    }
+    my $highlight = %rules.classify(*.value).nodemap(*».key).values;
+
+    return dot-chessboard([], rows => @mat.elems, columns => @mat.head.elems, :$highlight, |%args);
 }
