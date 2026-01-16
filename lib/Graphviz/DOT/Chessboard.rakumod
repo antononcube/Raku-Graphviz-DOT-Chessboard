@@ -167,22 +167,22 @@ multi sub dot-chessboard(
     if $column-names ~~ (Array:D | List:D | Seq:D) && $column-names.elems ≥ $columns {
         @row-tick-labels = $column-names.head($columns)
     }
-    my %row-ticks = ('cb-tick-' X~ @row-tick-labels) Z=> @row-tick-labels;
+    my @row-ticks = ('cb-tick-' X~ @row-tick-labels) Z=> @row-tick-labels;
 
-    my $gr = Graph::Path(%row-ticks.keys.sort);
-    $gr.vertex-coordinates = (%row-ticks.keys.sort Z=> (^$columns X -$tick-offset)).Hash;
+    my $gr = Graph::Path(@row-ticks>>.key);
+    $gr.vertex-coordinates = (@row-ticks>>.key Z=> (^$columns X -$tick-offset)).Hash;
 
     my @column-tick-labels = (1..$rows);
     if $row-names ~~ (Array:D | List:D | Seq:D) && $row-names.elems ≥ $rows {
         @column-tick-labels = $row-names.head($rows)
     }
-    my %column-ticks = ('cb-tick-' X~ @column-tick-labels) Z=> @column-tick-labels;
+    my @column-ticks = ('cb-tick-' X~ @column-tick-labels) Z=> @column-tick-labels;
 
-    my $gc = Graph::Path(%column-ticks.keys.sort);
-    $gc.vertex-coordinates = (%column-ticks.keys.sort Z=> (-$tick-offset X ^$rows)).Hash;
+    my $gc = Graph::Path(@column-ticks>>.key);
+    $gc.vertex-coordinates = (@column-ticks>>.key Z=> (-$tick-offset X ^$rows)).Hash;
     my $gt = $gr.union($gc);
 
-    my $ticks-dot = $gt.dot(node-labels => [|%row-ticks, |%column-ticks].Hash).lines.grep({ $_ ~~ / ^ '"cb-tick-'/}).join("\n");
+    my $ticks-dot = $gt.dot(node-labels => [|@row-ticks, |@column-ticks].Hash).lines.grep({ $_ ~~ / ^ '"cb-tick-'/}).join("\n");
 
     my $ticks-preamble = Q:s:to/END/;
     node [color=none, fillcolor=none, fontcolor=$font-color, labelloc=c, fontsize=$tick-font-size];
@@ -215,12 +215,13 @@ multi sub dot-matrix-plot(@mat, *%args) {
     unless @mat ~~ (Array:D | List:D | Seq:D) && @mat.all ~~ (Array:D | List:D | Seq:D) && @mat>>.elems.all eq @mat.head.elems;
 
     my %rules;
-    for ^@mat.elems -> $i {
+    my $rows = @mat.elems;
+    for ^$rows -> $i {
         for ^@mat.head.elems -> $j {
-            %rules{"cb-square-{$i}_{$j}"} = @mat[$i][$j]
+            %rules{"cb-square-{$rows - $i - 1}_{$j}"} = @mat[$i][$j]
         }
     }
     my $highlight = %rules.classify(*.value).nodemap(*».key).values;
 
-    return dot-chessboard([], rows => @mat.elems, columns => @mat.head.elems, :$highlight, |%args);
+    return dot-chessboard([], :$rows, columns => @mat.head.elems, :$highlight, |%args);
 }
