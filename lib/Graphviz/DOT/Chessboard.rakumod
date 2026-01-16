@@ -209,7 +209,9 @@ multi sub dot-chessboard(
 #| Matrix plot generation via Graphviz DOT language spec.
 proto sub dot-matrix-plot(|) is export {*}
 
-multi sub dot-matrix-plot(@mat, *%args) {
+multi sub dot-matrix-plot(@mat,
+                          :y-labels(:$row-names) is copy = Whatever,
+                          *%args) {
 
     die 'The first argument is expected to be a full 2D array.'
     unless @mat ~~ (Array:D | List:D | Seq:D) && @mat.all ~~ (Array:D | List:D | Seq:D) && @mat>>.elems.all eq @mat.head.elems;
@@ -223,5 +225,7 @@ multi sub dot-matrix-plot(@mat, *%args) {
     }
     my $highlight = %rules.classify(*.value).nodemap(*».key).values;
 
-    return dot-chessboard([], :$rows, columns => @mat.head.elems, :$highlight, |%args);
+    if $row-names ~~ (Array:D | List:D | Seq:D) { $row-names = $row-names.reverse }
+
+    return dot-chessboard([], :$rows, columns => @mat.head.elems, :$row-names, :$highlight, |%args);
 }
