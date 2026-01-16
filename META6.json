@@ -1,7 +1,7 @@
 {
     "name": "Graphviz::DOT::Chessboard",
     "description": "Chessboard plot using the Graphviz DOT language.",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "authors": [
         "Anton Antonov"
     ],
