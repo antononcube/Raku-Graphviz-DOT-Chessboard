@@ -229,7 +229,7 @@ multi sub dot-matrix-plot(@mat,
 
     if $row-names ~~ (Array:D | List:D | Seq:D) { $row-names = $row-names.reverse }
     if $column-names.isa(Whatever) {
-        $column-names = (^$columns)>>.Str
+        $column-names = (^$columns)>>.Str.Array
     }
 
     return dot-chessboard([], :$rows, :$columns, :$row-names, :$column-names, :$highlight, |%args);
