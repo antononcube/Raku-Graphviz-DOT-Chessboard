@@ -1,0 +1,6 @@
+Changes of the Raku package "Graphviz::DOT::Chessboard".
+
+2026-01-16 0.0.6
+    - Implemented (first version of) &dot-matrix-plot.
+        - This required refactoring of &dot-chessboard.
+    - Make a usage examples Jupyter notebook.
