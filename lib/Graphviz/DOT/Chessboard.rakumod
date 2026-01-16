@@ -211,6 +211,7 @@ proto sub dot-matrix-plot(|) is export {*}
 
 multi sub dot-matrix-plot(@mat,
                           :y-labels(:$row-names) is copy = Whatever,
+                          :x-labels(:$column-names) is copy = Whatever,
                           *%args) {
 
     die 'The first argument is expected to be a full 2D array.'
@@ -218,14 +219,18 @@ multi sub dot-matrix-plot(@mat,
 
     my %rules;
     my $rows = @mat.elems;
+    my $columns = @mat.head.elems;
     for ^$rows -> $i {
-        for ^@mat.head.elems -> $j {
+        for ^$columns -> $j {
             %rules{"cb-square-{$rows - $i - 1}_{$j}"} = @mat[$i][$j]
         }
     }
     my $highlight = %rules.classify(*.value).nodemap(*».key).values;
 
     if $row-names ~~ (Array:D | List:D | Seq:D) { $row-names = $row-names.reverse }
+    if $column-names.isa(Whatever) {
+        $column-names = (^$columns)>>.Str
+    }
 
-    return dot-chessboard([], :$rows, columns => @mat.head.elems, :$row-names, :$highlight, |%args);
+    return dot-chessboard([], :$rows, :$columns, :$row-names, :$column-names, :$highlight, |%args);
 }
